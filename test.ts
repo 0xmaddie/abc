@@ -3,10 +3,7 @@ import {
   assertEquals,
 } from "https://deno.land/std@0.97.0/testing/asserts.ts";
 
-import {
-  read,
-  norm,
-} from "./mod.ts";
+import { Block } from "./mod.ts";
 
 Deno.test({
   name: "ABC axioms",
@@ -22,9 +19,13 @@ Deno.test({
     ];
     console.log();
     for (const [source, expected] of axioms) {
-      const actual = `${norm(read(source))}`;
+      const actual = Block
+        .fromString(source)
+        .norm()
+        .toString();
       assertEquals(
-        expected, actual,
+        expected,
+        actual,
         `expected "${source} => ${expected}" but got "${source} => ${actual}"`,
       );
       console.log(`${source} => ${actual}`);
