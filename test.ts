@@ -16,6 +16,9 @@ Deno.test({
       ["[foo] E", ""],
       ["[foo] [bar] F", "[bar] [foo]"],
       ["[foo] S bar R", "[bar] foo"],
+      ["@foo", ""],
+      ["[@foo]", "[@foo]"],
+      ["[foo] !", "[foo] !"],
     ];
     console.log();
     for (const [source, expected] of axioms) {

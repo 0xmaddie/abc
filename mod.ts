@@ -26,7 +26,7 @@ export abstract class Block {
     return new Sequence(this, rhs);
   }
 
-  norm(): Block {
+  norm(fx?: Handler): Block {
     let state = new State(this);
     while (state.isNotDone) {
       const point = state.code.pop();
@@ -37,6 +37,16 @@ export abstract class Block {
         state.code.push(point.fst);
       } else if (point instanceof Quote) {
         state.data.push(point);
+      } else if (point instanceof Annotation) {
+        if (fx) {
+          fx.onAnnotation(point.name, state);
+        }
+      } else if (point instanceof Bang) {
+        if (fx) {
+          fx.onBang(state);
+        } else {
+          state.thunk(point);
+        }
       } else if (point instanceof Variable) {
         state.thunk(point);
       } else if (point instanceof Constant) {
@@ -136,12 +146,20 @@ export abstract class Block {
     return new Id();
   }
 
+  static get bang(): Block {
+    return new Bang();
+  }
+
   static constant(name: string): Block {
     return new Constant(name);
   }
 
   static variable(name: string): Block {
     return new Variable(name);
+  }
+
+  static annotation(name: string): Block {
+    return new Annotation(name);
   }
 
   static isId(block: Block): boolean {
@@ -164,6 +182,14 @@ export abstract class Block {
     return block instanceof Sequence;
   }
 
+  static isAnnotation(block: Block): boolean {
+    return block instanceof Annotation;
+  }
+
+  static isBang(block: Block): boolean {
+    return block instanceof Bang;
+  }
+
   static fromArray(xs: Block[]): Block {
     let state: Block = new Id();
     for (let i = xs.length - 1; i >= 0; --i) {
@@ -181,6 +207,7 @@ export abstract class Block {
     const tokens = source.split(" ");
     const constP = /^[A-Z]$/;
     const varP = /^[a-z_][a-z0-9_]*$/;
+    const annP = /^@[a-z_][a-z0-9_]*$/;
     let stack: Block[][] = [];
     let build: Block[] = [];
     let index = 0;
@@ -209,6 +236,15 @@ export abstract class Block {
         index++;
       } else if (varP.test(token)) {
         const program = Block.variable(token);
+        build.push(program);
+        index++;
+      } else if (annP.test(token)) {
+        const name = token.slice(1);
+        const program = Block.annotation(name);
+        build.push(program);
+        index++;
+      } else if (token === "!") {
+        const program = Block.bang;
         build.push(program);
         index++;
       } else if (token.length === 0) {
@@ -372,7 +408,45 @@ class Sequence extends Block {
   }
 }
 
-class Stack {
+class Annotation extends Block {
+  _name: string;
+
+  constructor(name: string) {
+    super();
+    this._name = name;
+  }
+
+  get name(): string {
+    return this._name;
+  }
+
+  equals(rhs: Block): boolean {
+    if (rhs instanceof Annotation) {
+      return this._name === rhs._name;
+    }
+    return false;
+  }
+
+  toString(): string {
+    return `@${this._name}`;
+  }
+}
+
+class Bang extends Block {
+  constructor() {
+    super();
+  }
+
+  equals(rhs: Block): boolean {
+    return rhs instanceof Bang;
+  }
+
+  toString(): string {
+    return "!";
+  }
+}
+
+export class Stack {
   buffer: Block[];
 
   constructor() {
@@ -413,7 +487,7 @@ class Stack {
   }
 }
 
-class State {
+export class State {
   code: Stack;
   data: Stack;
   kill: Stack;
@@ -452,6 +526,11 @@ class State {
     this.thunk(point);
     this.kill.append(this.code);
   }
+}
+
+export interface Handler {
+  onBang(state: State): void;
+  onAnnotation(name: string, state: State): void;
 }
 
 class ReadError {
