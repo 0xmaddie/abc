@@ -22,8 +22,7 @@ Deno.test({
     ];
     console.log();
     for (const [source, expected] of axioms) {
-      let target: Block;
-      for (const request of Block.fromString(source).norm()) {
+      for (const request of Block.norm(source)) {
         switch (request.tag) {
           case "bang":
           case "variable":
@@ -32,17 +31,16 @@ Deno.test({
           case "annotation":
             break;
           case "done":
-            target = request.block;
+            const actual = request.block.toString();
+            assertEquals(
+              expected,
+              actual,
+              `expected "${source} => ${expected}" but got "${source} => ${actual}"`,
+            );
+            console.log(`${source} => ${actual}`);
             break;
         }
       }
-      const actual = target!.toString();
-      assertEquals(
-        expected,
-        actual,
-        `expected "${source} => ${expected}" but got "${source} => ${actual}"`,
-      );
-      console.log(`${source} => ${actual}`);
     }
   },
 });

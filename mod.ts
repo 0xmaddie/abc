@@ -262,6 +262,10 @@ export abstract class Block {
     }
     return Block.fromArray(build);
   }
+
+  static norm(source: string): Generator<NormFx> {
+    return Block.fromString(source).norm();
+  }
 }
 
 class Id extends Block {

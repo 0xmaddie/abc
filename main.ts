@@ -2,11 +2,8 @@ import { readAll } from "https://deno.land/std@0.97.0/io/util.ts";
 import { Block } from "./mod.ts";
 
 const decoder = new TextDecoder();
-const bytes = await readAll(Deno.stdin);
-const input = decoder.decode(bytes);
-const source = Block.fromString(input);
-let target: Block;
-for (const request of source.norm()) {
+const source = decoder.decode(await readAll(Deno.stdin));
+for (const request of Block.norm(source)) {
   switch (request.tag) {
     case "bang":
     case "variable":
@@ -15,9 +12,7 @@ for (const request of source.norm()) {
     case "annotation":
       break;
     case "done":
-      target = request.block;
+      console.log(`${request.block}`);
       break;
   }
 }
-const output = target!.toString();
-console.log(output);
