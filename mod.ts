@@ -26,34 +26,28 @@ export abstract class Block {
     return new Sequence(this, rhs);
   }
 
-  norm(fx?: Handler): Block {
+  *norm(): Generator<NormFx> {
     let state = new State(this);
     while (state.isNotDone) {
-      const point = state.code.pop();
-      if (point instanceof Id) {
+      const block = state.code.pop();
+      if (block instanceof Id) {
         //
-      } else if (point instanceof Sequence) {
-        state.code.push(point.snd);
-        state.code.push(point.fst);
-      } else if (point instanceof Quote) {
-        state.data.push(point);
-      } else if (point instanceof Annotation) {
-        if (fx) {
-          fx.onAnnotation(point.name, state);
-        }
-      } else if (point instanceof Bang) {
-        if (fx) {
-          fx.onBang(state);
-        } else {
-          state.thunk(point);
-        }
-      } else if (point instanceof Variable) {
-        state.thunk(point);
-      } else if (point instanceof Constant) {
-        switch (point.name) {
+      } else if (block instanceof Quote) {
+        state.data.push(block);
+      } else if (block instanceof Sequence) {
+        state.code.push(block.snd);
+        state.code.push(block.fst);
+      } else if (block instanceof Bang) {
+        yield { tag: "bang", block, state };
+      } else if (block instanceof Annotation) {
+        yield { tag: "annotation", block, state };
+      } else if (block instanceof Variable) {
+        yield { tag: "variable", block, state };
+      } else if (block instanceof Constant) {
+        switch (block.name) {
           case "A": {
-            const block = state.data.top1;
-            state.code.push(block.body);
+            const source = state.data.top1;
+            state.code.push(source.body);
             state.data.pop();
             break;
           }
@@ -92,7 +86,7 @@ export abstract class Block {
             break;
           }
           case "R": {
-            state.thunk(point);
+            state.thunk(block);
             break;
           }
           case "S": {
@@ -124,16 +118,16 @@ export abstract class Block {
             } else {
               buffer.reverse();
               state.code.buffer = buffer;
-              state.bail(point);
+              state.bail(block);
             }
             break;
           }
         }
       } else {
-        state.thunk(point);
+        state.thunk(block);
       }
     }
-    return state.value;
+    yield { tag: "done", block: state.value };
   }
 
   toArray(): Block[] {
@@ -481,8 +475,8 @@ export class Stack {
     return this.buffer.pop()!;
   }
 
-  push(point: Block): void {
-    this.buffer.push(point);
+  push(block: Block): void {
+    this.buffer.push(block);
   }
 
   append(rhs: Stack): void {
@@ -521,20 +515,15 @@ export class State {
     return this.code.isNotEmpty;
   }
 
-  thunk(point: Block): void {
+  thunk(block: Block): void {
     this.kill.append(this.data);
-    this.kill.push(point);
+    this.kill.push(block);
   }
 
-  bail(point: Block): void {
-    this.thunk(point);
+  bail(block: Block): void {
+    this.thunk(block);
     this.kill.append(this.code);
   }
-}
-
-export interface Handler {
-  onBang(state: State): void;
-  onAnnotation(name: string, state: State): void;
 }
 
 class ReadError {
@@ -560,3 +549,9 @@ class ReadError {
     return `While reading ${this.source}\nat token ${position}:\n${this.message}`;
   }
 }
+
+export type NormFx =
+  | { tag: "bang"; state: State; block: Block; }
+  | { tag: "annotation"; state: State; block: Block; }
+  | { tag: "variable"; state: State; block: Block; }
+  | { tag: "done"; block: Block; }

@@ -22,10 +22,21 @@ Deno.test({
     ];
     console.log();
     for (const [source, expected] of axioms) {
-      const actual = Block
-        .fromString(source)
-        .norm()
-        .toString();
+      let target: Block;
+      for (const request of Block.fromString(source).norm()) {
+        switch (request.tag) {
+          case "bang":
+          case "variable":
+            request.state.thunk(request.block);
+            break;
+          case "annotation":
+            break;
+          case "done":
+            target = request.block;
+            break;
+        }
+      }
+      const actual = target!.toString();
       assertEquals(
         expected,
         actual,
