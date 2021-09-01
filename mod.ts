@@ -275,6 +275,10 @@ class Id extends Block {
     super();
   }
 
+  seq(rhs: Block): Block {
+    return rhs;
+  }
+
   equals(rhs: Block): boolean {
     return rhs instanceof Id;
   }
