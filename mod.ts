@@ -1,4 +1,4 @@
-export abstract class Block {
+export abstract class Block<T> {
   get name(): string {
     throw `${this} does not have a "name" property`;
   }
@@ -7,34 +7,34 @@ export abstract class Block {
     throw `${this} is not a number`;
   }
 
-  get body(): Block {
+  get body(): Block<T> {
     throw `${this} is not a quote`;
   }
 
-  get fst(): Block {
+  get fst(): Block<T> {
     throw `${this} is not a sequence`;
   }
 
-  get snd(): Block {
+  get snd(): Block<T> {
     throw `${this} is not a sequence`;
   }
 
-  expand(): Block {
+  expand(): Block<T> {
     return this;
   }
 
-  quote(): Block {
+  quote(): Block<T> {
     return new Quote(this);
   }
 
-  seq(rhs: Block): Block {
+  seq(rhs: Block<T>): Block<T> {
     if (rhs instanceof Id) {
       return this;
     }
     return new Sequence(this, rhs);
   }
 
-  *norm(): Generator<NormFx> {
+  *norm(): Generator<NormFx<T>> {
     let state = new State(this);
     while (state.isNotDone) {
       const block = state.code.pop();
@@ -138,85 +138,89 @@ export abstract class Block {
     yield { tag: "done", block: state.value };
   }
 
-  toArray(): Block[] {
+  toArray(): Block<T>[] {
     return [this];
   }
 
-  abstract equals(rhs: Block): boolean;
+  abstract equals(rhs: Block<T>): boolean;
 
-  static get id(): Block {
+  static id<T>(): Block<T> {
     return new Id();
   }
 
-  static get bang(): Block {
+  static bang<T>(): Block<T> {
     return new Bang();
   }
 
-  static constant(name: string): Block {
+  static constant<T>(name: string): Block<T> {
     return new Constant(name);
   }
 
-  static variable(name: string): Block {
+  static variable<T>(name: string): Block<T> {
     return new Variable(name);
   }
 
-  static natural(value: bigint): Block {
+  static natural<T>(value: bigint): Block<T> {
     return new Natural(value);
   }
 
-  static keyword(name: string): Block {
+  static keyword<T>(name: string): Block<T> {
     return new Keyword(name);
   }
 
-  static annotation(name: string): Block {
+  static annotation<T>(name: string): Block<T> {
     return new Annotation(name);
   }
 
-  static isId(block: Block): boolean {
+  static isId<T>(block: Block<T>): boolean {
     return block instanceof Id;
   }
 
-  static isConstant(block: Block): boolean {
+  static isConstant<T>(block: Block<T>): boolean {
     return block instanceof Constant;
   }
 
-  static isVariable(block: Block): boolean {
+  static isVariable<T>(block: Block<T>): boolean {
     return block instanceof Variable;
   }
 
-  static isNatural(block: Block): boolean {
+  static isNatural<T>(block: Block<T>): boolean {
     return block instanceof Natural;
   }
 
-  static isKeyword(block: Block): boolean {
+  static isKeyword<T>(block: Block<T>): boolean {
     return block instanceof Keyword;
   }
 
-  static isQuote(block: Block): boolean {
+  static isEmbed<T>(block: Block<T>): boolean {
+    return block instanceof Embed;
+  }
+
+  static isQuote<T>(block: Block<T>): boolean {
     return block instanceof Quote;
   }
 
-  static isSequence(block: Block): boolean {
+  static isSequence<T>(block: Block<T>): boolean {
     return block instanceof Sequence;
   }
 
-  static isAnnotation(block: Block): boolean {
+  static isAnnotation<T>(block: Block<T>): boolean {
     return block instanceof Annotation;
   }
 
-  static isBang(block: Block): boolean {
+  static isBang<T>(block: Block<T>): boolean {
     return block instanceof Bang;
   }
 
-  static fromArray(xs: Block[]): Block {
-    let state: Block = new Id();
+  static fromArray<T>(xs: Block<T>[]): Block<T> {
+    let state: Block<T> = new Id();
     for (let i = xs.length - 1; i >= 0; --i) {
       state = xs[i].seq(state);
     }
     return state;
   }
 
-  static fromString(source: string): Block {
+  static fromString<T>(source: string): Block<T> {
     source = source.replaceAll("[", "[ ");
     source = source.replaceAll("]", " ]");
     source = source.replaceAll("\r", " ");
@@ -228,8 +232,8 @@ export abstract class Block {
     const annP = /^@[a-z_][a-z0-9_]*$/;
     const natP = /^(0|[1-9][0-9]*)$/;
     const keyP = /^:[a-z_][a-z0-9_]*$/;
-    let stack: Block[][] = [];
-    let build: Block[] = [];
+    let stack: Block<T>[][] = [];
+    let build: Block<T>[] = [];
     let index = 0;
     while (index < tokens.length) {
       const token = tokens[index];
@@ -276,7 +280,7 @@ export abstract class Block {
         build.push(program);
         index++;
       } else if (token === "!") {
-        const program = Block.bang;
+        const program = Block.bang();
         build.push(program);
         index++;
       } else if (token.length === 0) {
@@ -301,21 +305,21 @@ export abstract class Block {
     return Block.fromArray(build);
   }
 
-  static norm(source: string): Generator<NormFx> {
+  static norm<T>(source: string): Generator<NormFx<T>> {
     return Block.fromString(source).norm();
   }
 }
 
-class Id extends Block {
+class Id<T> extends Block<T> {
   constructor() {
     super();
   }
 
-  seq(rhs: Block): Block {
+  seq(rhs: Block<T>): Block<T> {
     return rhs;
   }
 
-  equals(rhs: Block): boolean {
+  equals(rhs: Block<T>): boolean {
     return rhs instanceof Id;
   }
 
@@ -324,7 +328,7 @@ class Id extends Block {
   }
 }
 
-class Constant extends Block {
+class Constant<T> extends Block<T> {
   _name: string;
 
   constructor(name: string) {
@@ -336,7 +340,7 @@ class Constant extends Block {
     return this._name;
   }
 
-  equals(rhs: Block): boolean {
+  equals(rhs: Block<T>): boolean {
     if (rhs instanceof Constant) {
       return this._name === rhs._name;
     }
@@ -348,7 +352,7 @@ class Constant extends Block {
   }
 }
 
-class Variable extends Block {
+class Variable<T> extends Block<T> {
   _name: string;
 
   constructor(name: string) {
@@ -360,7 +364,7 @@ class Variable extends Block {
     return this._name;
   }
 
-  equals(rhs: Block): boolean {
+  equals(rhs: Block<T>): boolean {
     if (rhs instanceof Variable) {
       return this._name === rhs._name;
     }
@@ -372,7 +376,7 @@ class Variable extends Block {
   }
 }
 
-class Natural extends Block {
+class Natural<T> extends Block<T> {
   _value: bigint;
 
   constructor(value: bigint) {
@@ -384,7 +388,7 @@ class Natural extends Block {
     return this._value;
   }
 
-  expand(): Block {
+  expand(): Block<T> {
     let block = Block.variable("zero").quote();
     for (let i = 0n; i < this.value; ++i) {
       block = block
@@ -394,7 +398,7 @@ class Natural extends Block {
     return block;
   }
 
-  equals(rhs: Block): boolean {
+  equals(rhs: Block<T>): boolean {
     if (rhs instanceof Natural) {
       return this.value === rhs.value;
     }
@@ -406,9 +410,9 @@ class Natural extends Block {
   }
 }
 
-function toTree(
+function toTree<T>(
   buffer: Uint8Array,
-): Block {
+): Block<T> {
   if (buffer.length === 2) {
     const fst = Block.natural(BigInt(buffer[0]));
     const snd = Block.natural(BigInt(buffer[1]));
@@ -422,7 +426,7 @@ function toTree(
   return fst.seq(snd).quote();
 }
 
-class Keyword extends Block {
+class Keyword<T> extends Block<T> {
   _name: string;
 
   constructor(name: string) {
@@ -437,7 +441,7 @@ class Keyword extends Block {
     return this._name;
   }
 
-  expand(): Block {
+  expand(): Block<T> {
     const encoder = new TextEncoder();
     const bytes = new Uint8Array(32);
     const raw = encoder.encode(this.name);
@@ -447,7 +451,7 @@ class Keyword extends Block {
     return toTree(bytes);
   }
 
-  equals(rhs: Block): boolean {
+  equals(rhs: Block<T>): boolean {
     if (rhs instanceof Keyword) {
       return this.name === rhs.name;
     }
@@ -459,19 +463,40 @@ class Keyword extends Block {
   }
 }
 
-class Quote extends Block {
-  _body: Block;
+class Embed<T> extends Block<T> {
+  _value: T;
 
-  constructor(body: Block) {
+  constructor(value: T) {
+    super();
+    this._value = value;
+  }
+
+  equals(rhs: Block<T>): boolean {
+    if (rhs instanceof Embed) {
+      // TODO: equals constraint for embedded values
+      return this._value === rhs._value;
+    }
+    return false;
+  }
+
+  toString(): string {
+    return `#<${this._value}>`;
+  }
+}
+
+class Quote<T> extends Block<T> {
+  _body: Block<T>;
+
+  constructor(body: Block<T>) {
     super();
     this._body = body;
   }
 
-  get body(): Block {
+  get body(): Block<T> {
     return this._body;
   }
 
-  equals(rhs: Block): boolean {
+  equals(rhs: Block<T>): boolean {
     if (rhs instanceof Quote) {
       return this._body.equals(rhs._body);
     }
@@ -483,35 +508,35 @@ class Quote extends Block {
   }
 }
 
-class Sequence extends Block {
-  _fst: Block;
-  _snd: Block;
+class Sequence<T> extends Block<T> {
+  _fst: Block<T>;
+  _snd: Block<T>;
 
   constructor(
-    fst: Block,
-    snd: Block,
+    fst: Block<T>,
+    snd: Block<T>,
   ) {
     super();
     this._fst = fst;
     this._snd = snd;
   }
 
-  get fst(): Block {
+  get fst(): Block<T> {
     return this._fst;
   }
 
-  get snd(): Block {
+  get snd(): Block<T> {
     return this._snd;
   }
 
-  seq(rhs: Block): Block {
+  seq(rhs: Block<T>): Block<T> {
     if (rhs instanceof Id) {
       return this;
     }
     return this._fst.seq(this._snd.seq(rhs));
   }
 
-  equals(rhs: Block): boolean {
+  equals(rhs: Block<T>): boolean {
     if (rhs instanceof Sequence) {
       if (this._fst.equals(rhs._fst)) {
         return this._snd.equals(rhs._snd);
@@ -520,9 +545,9 @@ class Sequence extends Block {
     return false;
   }
 
-  toArray(): Block[] {
+  toArray(): Block<T>[] {
     let buffer = [];
-    let xs: Block = this;
+    let xs: Block<T> = this;
     while (xs instanceof Sequence) {
       buffer.push(xs.fst);
       xs = xs.snd;
@@ -535,7 +560,7 @@ class Sequence extends Block {
   }
 }
 
-class Annotation extends Block {
+class Annotation<T> extends Block<T> {
   _name: string;
 
   constructor(name: string) {
@@ -547,7 +572,7 @@ class Annotation extends Block {
     return this._name;
   }
 
-  equals(rhs: Block): boolean {
+  equals(rhs: Block<T>): boolean {
     if (rhs instanceof Annotation) {
       return this._name === rhs._name;
     }
@@ -559,12 +584,12 @@ class Annotation extends Block {
   }
 }
 
-class Bang extends Block {
+class Bang<T> extends Block<T> {
   constructor() {
     super();
   }
 
-  equals(rhs: Block): boolean {
+  equals(rhs: Block<T>): boolean {
     return rhs instanceof Bang;
   }
 
@@ -573,8 +598,8 @@ class Bang extends Block {
   }
 }
 
-export class Stack {
-  buffer: Block[];
+export class Stack<T> {
+  buffer: Block<T>[];
 
   constructor() {
     this.buffer = [];
@@ -592,41 +617,41 @@ export class Stack {
     return this.buffer.length !== 0;
   }
 
-  get top1(): Block {
+  get top1(): Block<T> {
     return this.buffer[this.buffer.length - 1];
   }
 
-  get top2(): Block {
+  get top2(): Block<T> {
     return this.buffer[this.buffer.length - 2];
   }
 
-  pop(): Block {
+  pop(): Block<T> {
     return this.buffer.pop()!;
   }
 
-  push(block: Block): void {
+  push(block: Block<T>): void {
     this.buffer.push(block);
   }
 
-  append(rhs: Stack): void {
+  append(rhs: Stack<T>): void {
     this.buffer = this.buffer.concat(rhs.buffer);
     rhs.buffer = [];
   }
 }
 
-export class State {
-  code: Stack;
-  data: Stack;
-  kill: Stack;
+export class State<T> {
+  code: Stack<T>;
+  data: Stack<T>;
+  kill: Stack<T>;
 
-  constructor(initial: Block) {
+  constructor(initial: Block<T>) {
     this.code = new Stack();
     this.data = new Stack();
     this.kill = new Stack();
     this.code.push(initial);
   }
 
-  get value(): Block {
+  get value(): Block<T> {
     const code = this.code.buffer.slice();
     code.reverse();
     const buffer = this.kill.buffer.concat(
@@ -644,12 +669,12 @@ export class State {
     return this.code.isNotEmpty;
   }
 
-  thunk(block: Block): void {
+  thunk(block: Block<T>): void {
     this.kill.append(this.data);
     this.kill.push(block);
   }
 
-  bail(block: Block): void {
+  bail(block: Block<T>): void {
     this.thunk(block);
     this.kill.append(this.code);
   }
@@ -679,8 +704,8 @@ class ReadError {
   }
 }
 
-export type NormFx =
-  | { tag: "bang"; state: State; block: Block; }
-  | { tag: "annotation"; state: State; block: Block; }
-  | { tag: "variable"; state: State; block: Block; }
-  | { tag: "done"; block: Block; }
+export type NormFx<T> =
+  | { tag: "bang"; state: State<T>; block: Block<T>; }
+  | { tag: "annotation"; state: State<T>; block: Block<T>; }
+  | { tag: "variable"; state: State<T>; block: Block<T>; }
+  | { tag: "done"; block: Block<T>; }
