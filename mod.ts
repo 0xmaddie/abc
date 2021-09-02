@@ -15,6 +15,10 @@ export abstract class Block {
     throw `${this} is not a sequence`;
   }
 
+  expand(): Block {
+    return this;
+  }
+
   quote(): Block {
     return new Quote(this);
   }
@@ -152,6 +156,10 @@ export abstract class Block {
     return new Variable(name);
   }
 
+  static natural(value: bigint): Block {
+    return new Natural(value);
+  }
+
   static annotation(name: string): Block {
     return new Annotation(name);
   }
@@ -166,6 +174,10 @@ export abstract class Block {
 
   static isVariable(block: Block): boolean {
     return block instanceof Variable;
+  }
+
+  static isNatural(block: Block): boolean {
+    return block instanceof Natural;
   }
 
   static isQuote(block: Block): boolean {
@@ -202,6 +214,7 @@ export abstract class Block {
     const constP = /^[A-Z]$/;
     const varP = /^[a-z_][a-z0-9_]*$/;
     const annP = /^@[a-z_][a-z0-9_]*$/;
+    const natP = /^(0|[1-9][0-9]*)$/;
     let stack: Block[][] = [];
     let build: Block[] = [];
     let index = 0;
@@ -235,6 +248,11 @@ export abstract class Block {
       } else if (annP.test(token)) {
         const name = token.slice(1);
         const program = Block.annotation(name);
+        build.push(program);
+        index++;
+      } else if (natP.test(token)) {
+        const value = BigInt(Number.parseInt(token));
+        const program = Block.natural(value);
         build.push(program);
         index++;
       } else if (token === "!") {
@@ -331,6 +349,40 @@ class Variable extends Block {
 
   toString(): string {
     return this.name;
+  }
+}
+
+class Natural extends Block {
+  _value: bigint;
+
+  constructor(value: bigint) {
+    super();
+    this._value = value;
+  }
+
+  get value(): bigint {
+    return this._value;
+  }
+
+  expand(): Block {
+    let block = Block.variable("zero").quote();
+    for (let i = 0n; i < this.value; ++i) {
+      block = block
+        .seq(Block.variable("succ"))
+        .quote();
+    }
+    return block;
+  }
+
+  equals(rhs: Block): boolean {
+    if (rhs instanceof Natural) {
+      return this.value === rhs.value;
+    }
+    return false;
+  }
+
+  toString(): string {
+    return `${this.value}`;
   }
 }
 

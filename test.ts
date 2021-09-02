@@ -19,6 +19,7 @@ Deno.test({
       ["@foo", ""],
       ["[@foo]", "[@foo]"],
       ["[foo] !", "[foo] !"],
+      ["1337", "1337"],
     ];
     console.log();
     for (const [source, expected] of axioms) {
@@ -42,5 +43,16 @@ Deno.test({
         }
       }
     }
+  },
+});
+
+Deno.test({
+  name: "Expand natural numbers",
+  fn: () => {
+    const source = "4";
+    const expected = `[[[[[zero] succ] succ] succ] succ]`;
+    const actual = Block.fromString(source).expand().toString();
+    assertEquals(expected, actual, `expected ${expected} but got ${actual}`);
+    console.log(`\n${source} => ${actual}`);
   },
 });
