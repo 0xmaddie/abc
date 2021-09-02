@@ -1,6 +1,10 @@
 export abstract class Block {
   get name(): string {
-    throw `${this} is not a constant or variable`;
+    throw `${this} does not have a "name" property`;
+  }
+
+  get value(): bigint {
+    throw `${this} is not a number`;
   }
 
   get body(): Block {
@@ -160,6 +164,10 @@ export abstract class Block {
     return new Natural(value);
   }
 
+  static keyword(name: string): Block {
+    return new Keyword(name);
+  }
+
   static annotation(name: string): Block {
     return new Annotation(name);
   }
@@ -178,6 +186,10 @@ export abstract class Block {
 
   static isNatural(block: Block): boolean {
     return block instanceof Natural;
+  }
+
+  static isKeyword(block: Block): boolean {
+    return block instanceof Keyword;
   }
 
   static isQuote(block: Block): boolean {
@@ -215,6 +227,7 @@ export abstract class Block {
     const varP = /^[a-z_][a-z0-9_]*$/;
     const annP = /^@[a-z_][a-z0-9_]*$/;
     const natP = /^(0|[1-9][0-9]*)$/;
+    const keyP = /^:[a-z_][a-z0-9_]*$/;
     let stack: Block[][] = [];
     let build: Block[] = [];
     let index = 0;
@@ -233,7 +246,9 @@ export abstract class Block {
             "unbalanced brackets",
           );
         }
-        const program = Block.fromArray(build).quote();
+        const program = Block
+          .fromArray(build)
+          .quote();
         build = stack.pop()!;
         build.push(program);
         index++;
@@ -253,6 +268,11 @@ export abstract class Block {
       } else if (natP.test(token)) {
         const value = BigInt(Number.parseInt(token));
         const program = Block.natural(value);
+        build.push(program);
+        index++;
+      } else if (keyP.test(token)) {
+        const name = token.slice(1);
+        const program = Block.keyword(name);
         build.push(program);
         index++;
       } else if (token === "!") {
@@ -383,6 +403,59 @@ class Natural extends Block {
 
   toString(): string {
     return `${this.value}`;
+  }
+}
+
+function toTree(
+  buffer: Uint8Array,
+): Block {
+  if (buffer.length === 2) {
+    const fst = Block.natural(BigInt(buffer[0]));
+    const snd = Block.natural(BigInt(buffer[1]));
+    return fst.seq(snd).quote();
+  }
+  const midpoint = buffer.length/2;
+  const lhs = buffer.subarray(0, midpoint);
+  const rhs = buffer.subarray(midpoint);
+  const fst = toTree(lhs);
+  const snd = toTree(rhs);
+  return fst.seq(snd).quote();
+}
+
+class Keyword extends Block {
+  _name: string;
+
+  constructor(name: string) {
+    super();
+    if (name.length > 32) {
+      throw `keywords must be 32 bytes or less`;
+    }
+    this._name = name;
+  }
+
+  get name(): string {
+    return this._name;
+  }
+
+  expand(): Block {
+    const encoder = new TextEncoder();
+    const bytes = new Uint8Array(32);
+    const raw = encoder.encode(this.name);
+    for (let i = 0; i < raw.length; ++i) {
+      bytes[i] = raw[i];
+    }
+    return toTree(bytes);
+  }
+
+  equals(rhs: Block): boolean {
+    if (rhs instanceof Keyword) {
+      return this.name === rhs.name;
+    }
+    return false;
+  }
+
+  toString(): string {
+    return `:${this.name}`;
   }
 }
 

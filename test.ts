@@ -20,6 +20,7 @@ Deno.test({
       ["[@foo]", "[@foo]"],
       ["[foo] !", "[foo] !"],
       ["1337", "1337"],
+      [":foo", ":foo"],
     ];
     console.log();
     for (const [source, expected] of axioms) {
@@ -53,6 +54,15 @@ Deno.test({
     const expected = `[[[[[zero] succ] succ] succ] succ]`;
     const actual = Block.fromString(source).expand().toString();
     assertEquals(expected, actual, `expected ${expected} but got ${actual}`);
+    console.log(`\n${source} => ${actual}`);
+  },
+});
+
+Deno.test({
+  name: "Expand keywords",
+  fn: () => {
+    const source = ":foo";
+    const actual = Block.fromString(source).expand();
     console.log(`\n${source} => ${actual}`);
   },
 });
