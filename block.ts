@@ -374,13 +374,15 @@ function toTree<T>(
   return fst.seq(snd).quote();
 }
 
+const KEYWORD_LENGTH = 64;
+
 class Keyword<T> extends Block<T> {
   _name: string;
 
   constructor(name: string) {
     super();
-    if (name.length > 32) {
-      throw `keywords must be 32 bytes or less`;
+    if (name.length > KEYWORD_LENGTH) {
+      throw `keywords must be ${KEYWORD_LENGTH} bytes or less`;
     }
     this._name = name;
   }
@@ -391,7 +393,7 @@ class Keyword<T> extends Block<T> {
 
   expand(): Block<T> {
     const encoder = new TextEncoder();
-    const bytes = new Uint8Array(32);
+    const bytes = new Uint8Array(KEYWORD_LENGTH);
     const raw = encoder.encode(this._name);
     for (let i = 0; i < raw.length; ++i) {
       bytes[i] = raw[i];
