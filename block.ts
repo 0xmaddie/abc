@@ -419,6 +419,10 @@ class Embed<T> extends Block<T> {
     this._value = value;
   }
 
+  get embed(): T {
+    return this._value;
+  }
+
   equals(rhs: Block<T>): boolean {
     if (rhs instanceof Embed) {
       // TODO: equals constraint for embedded values
