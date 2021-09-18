@@ -1,9 +1,10 @@
 import {
-  //assert,
+  assert,
   assertEquals,
 } from "https://deno.land/std@0.97.0/testing/asserts.ts";
 
 import { Block } from "./mod.ts";
+import { Module, Patch } from "./module.ts";
 
 Deno.test({
   name: "ABC axioms",
@@ -64,5 +65,33 @@ Deno.test({
     const source = ":foo";
     const actual = Block.fromString(source).expand();
     console.log(`\n${source} => ${actual}`);
+  },
+});
+
+Deno.test({
+  name: "Module sanity check",
+  fn: () => {
+    const source = `
++foo 1
++bar [foo bar baz]
++baz [3 4 5]
+`;
+    const ctx = new Module();
+    const patch = Patch.fromString(source);
+    assertEquals(`${patch}`, source.trim());
+    patch.apply(ctx);
+    assert(ctx.has("foo"));
+    assert(
+      ctx.get("foo").equals(
+        Block.fromString("1")));
+    assert(ctx.has("bar"));
+    assert(
+      ctx.get("bar").equals(
+        Block.fromString("[foo bar baz]")));
+    assert(
+      ctx.has("baz"));
+    assert(
+      ctx.get("baz").equals(
+        Block.fromString("[3 4 5]")));
   },
 });
