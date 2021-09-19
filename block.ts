@@ -109,43 +109,6 @@ export abstract class Block<T> {
             state.data.push(snd);
             break;
           }
-          case "R": {
-            state.thunk(block);
-            break;
-          }
-          case "S": {
-            const client = state.data.top1.body;
-            let buffer = [];
-            let found_reset = false;
-            while (
-              state.code.isNotEmpty &&
-              !found_reset
-            ) {
-              const needle = state.code.pop();
-              if (
-                needle instanceof Constant &&
-                needle.constant === "R"
-              ) {
-                found_reset = true;
-              } else if (needle instanceof Sequence) {
-                state.code.push(needle.snd);
-                state.code.push(needle.fst);
-              } else {
-                buffer.push(needle);
-              }
-            }
-            if (found_reset) {
-              const action = Block.fromArray(buffer).quote();
-              state.data.pop();
-              state.data.push(action);
-              state.code.push(client);
-            } else {
-              buffer.reverse();
-              state.code.buffer = buffer;
-              state.bail(block);
-            }
-            break;
-          }
         }
       } else {
         state.thunk(block);
@@ -175,7 +138,7 @@ export abstract class Block<T> {
     source = source.replaceAll("\t", " ");
     source = source.replaceAll("\n", " ");
     const tokens = source.split(" ");
-    const constP = /^[A-Z]$/;
+    const constP = /^[A-F]$/;
     const varP = /^[a-z_][a-z0-9_]*$/;
     const annP = /^@[a-z_][a-z0-9_]*$/;
     const natP = /^(0|[1-9][0-9]*)$/;

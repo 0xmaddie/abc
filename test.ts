@@ -16,7 +16,6 @@ Deno.test({
       ["[foo] D", "[foo] [foo]"],
       ["[foo] E", ""],
       ["[foo] [bar] F", "[bar] [foo]"],
-      ["[foo] S bar R", "[bar] foo"],
       ["@foo", ""],
       ["[@foo]", "[@foo]"],
       ["[foo] !", "[foo] !"],
