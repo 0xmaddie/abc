@@ -61,8 +61,6 @@ export abstract class Block<T> {
       } else if (block instanceof Sequence) {
         state.code.push(block.snd);
         state.code.push(block.fst);
-      } else if (block instanceof Bang) {
-        yield { tag: "bang", block, state };
       } else if (block instanceof Annotation) {
         yield { tag: "annotation", block, state };
       } else if (block instanceof Variable) {
@@ -188,10 +186,6 @@ export abstract class Block<T> {
       } else if (keyP.test(token)) {
         const name = token.slice(1);
         const program = new Keyword<T>(name);
-        build.push(program);
-        index++;
-      } else if (token === "!") {
-        const program = new Bang<T>();
         build.push(program);
         index++;
       } else if (token.length === 0) {
@@ -501,20 +495,6 @@ class Annotation<T> extends Block<T> {
   }
 }
 
-class Bang<T> extends Block<T> {
-  constructor() {
-    super();
-  }
-
-  equals(rhs: Block<T>): boolean {
-    return rhs instanceof Bang;
-  }
-
-  toString(): string {
-    return "!";
-  }
-}
-
 export class Stack<T> {
   buffer: Block<T>[];
 
@@ -622,7 +602,6 @@ class ReadError {
 }
 
 export type NormFx<T> =
-  | { tag: "bang"; state: State<T>; block: Block<T>; }
   | { tag: "annotation"; state: State<T>; block: Block<T>; }
   | { tag: "variable"; state: State<T>; block: Block<T>; }
   | { tag: "done"; block: Block<T>; }

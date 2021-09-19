@@ -5,7 +5,6 @@ const decoder = new TextDecoder();
 const source = decoder.decode(await readAll(Deno.stdin));
 for (const request of Block.norm(source)) {
   switch (request.tag) {
-    case "bang":
     case "variable":
       request.state.thunk(request.block);
       break;

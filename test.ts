@@ -18,7 +18,6 @@ Deno.test({
       ["[foo] [bar] F", "[bar] [foo]"],
       ["@foo", ""],
       ["[@foo]", "[@foo]"],
-      ["[foo] !", "[foo] !"],
       ["1337", "1337"],
       [":foo", ":foo"],
     ];
@@ -26,7 +25,6 @@ Deno.test({
     for (const [source, expected] of axioms) {
       for (const request of Block.norm(source)) {
         switch (request.tag) {
-          case "bang":
           case "variable":
             request.state.thunk(request.block);
             break;
