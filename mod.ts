@@ -5,6 +5,8 @@ export {
   show as showBlock,
   norm,
   expand as expandBlock,
+  Stack,
+  State,
 } from "./block/mod.ts";
 
 export type {

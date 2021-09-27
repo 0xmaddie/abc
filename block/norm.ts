@@ -110,7 +110,7 @@ export type Event<T> =
       method: "check-tag";
       state: State<T>; }
   | { tag: "done";
-      value: Block<T>; }
+      state: State<T>; }
 
 /**
  * Rewrite a block until it reaches normal form.
@@ -292,5 +292,5 @@ export function* norm<T>(
       }
     }
   }
-  yield { tag: "done", value: state.value };
+  yield { tag: "done", state };
 }

@@ -48,7 +48,7 @@ Deno.test({
           case "condition":
             throw `condition: ${event.method}`;
           case "done":
-            const actual = show(event.value);
+            const actual = show(event.state.value);
             assertEquals(
               expected,
               actual,
