@@ -2,21 +2,17 @@ import {
   Module,
 } from "./module.ts";
 
-import {
-  Patch,
-  insert,
-  sequence,
-} from "./patch.ts";
+import * as patch from "../patch/mod.ts";
 
 /**
  * Return a patch that will reconstruct the given module.
  */
-export function quoteModule<T>(
+export function quote<T>(
   ctx: Module<T>,
-): Patch<T> {
+): patch.Patch<T> {
   let buf = [];
   for (const [key, value] of ctx.entries()) {
-    buf.push(insert(key, value));
+    buf.push(patch.insert(key, value));
   }
-  return sequence(...buf);
+  return patch.sequence(...buf);
 }

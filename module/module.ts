@@ -1,47 +1,44 @@
-import {
-  Block,
-  show,
-} from "../block/mod.ts";
-
-import {
-  Key,
-  getKey,
-} from "./key.ts";
+import * as block from "../block/mod.ts";
+import * as key from "../key/mod.ts";
 
 /**
  * A key-value store of ABC blocks.
  */
 export class Module<T> {
-  _data: Map<string, Block<T>>;
+  _data: Map<string, block.Block<T>>;
 
   constructor() {
     this._data = new Map();
   }
 
-  entries(): IterableIterator<[string, Block<T>]> {
+  entries(
+  ): IterableIterator<[string, block.Block<T>]> {
     return this._data.entries();
   }
 
-  has(key: Key): boolean {
-    const name = getKey(key);
+  has(point: key.Key): boolean {
+    const name = key.name(point);
     return this._data.has(name);
   }
 
-  get(key: Key): Block<T> {
-    const name = getKey(key);
+  get(point: key.Key): block.Block<T> {
+    const name = key.name(point);
     if (!this._data.has(name)) {
       throw `${name} is undefined`;
     }
     return this._data.get(name)!;
   }
-  
-  set(key: Key, value: Block<T>): void {
-    const name = getKey(key);
+
+  set(
+    point: key.Key,
+    value: block.Block<T>,
+  ): void {
+    const name = key.name(point);
     this._data.set(name, value);
   }
 
-  delete(key: Key): void {
-    const name = getKey(key);
+  delete(point: key.Key): void {
+    const name = key.name(point);
     this._data.delete(name);
   }
 

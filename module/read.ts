@@ -3,20 +3,18 @@ import {
 } from "./module.ts";
 
 import {
-  readPatch,
-} from "./read_patch.ts";
+  apply,
+} from "./apply.ts";
 
-import {
-  runPatch,
-} from "./run_patch.ts";
+import * as patch from "../patch/mod.ts";
 
 /**
  * Construct a module from a string.
  */
-export function readModule<T>(
+export function read<T>(
   source: string,
 ): Module<T> {
   let ctx = new Module<T>();
-  runPatch<T>(readPatch<T>(source), ctx);
+  apply<T>(patch.read<T>(source), ctx);
   return ctx;
 }

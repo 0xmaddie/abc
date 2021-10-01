@@ -6,14 +6,12 @@ import {
   sequence,
 } from "./patch.ts";
 
-import {
-  read as bread,
-} from "../block/mod.ts";
+import * as block from "../block/mod.ts";
 
 /**
  * Construct a patch from a string.
  */
-export function readPatch<T>(
+export function read<T>(
   source: string,
 ): Patch<T> {
   const setP = /^\+[a-z_][a-z0-9_]* /;
@@ -24,7 +22,7 @@ export function readPatch<T>(
       const space = line.indexOf(" ");
       const key = line.slice(1, space);
       const rest = line.slice(space+1);
-      const value = bread<T>(rest);
+      const value = block.read<T>(rest);
       buf.push(insert<T>(key, value));
     } else if (deleteP.test(line)) {
       const space = line.indexOf(" ");

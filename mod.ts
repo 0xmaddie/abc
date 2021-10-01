@@ -1,26 +1,4 @@
-export type { Block } from "./block/mod.ts";
-
-export {
-  read as readBlock,
-  show as showBlock,
-  norm,
-  expand as expandBlock,
-  Stack,
-  State,
-} from "./block/mod.ts";
-
-export type {
-  Key,
-  Patch,
-} from "./module/mod.ts";
-  
-export {
-  Module,
-  readPatch,
-  showPatch,
-  runPatch,
-  readModule,
-  showModule,
-  quoteModule,
-  sequence as sequencePatch,
-} from "./module/mod.ts";
+export * as block from "./block/mod.ts";
+export * as key from "./key/mod.ts";
+export * as patch from "./patch/mod.ts";
+export * as module from "./module/mod.ts";

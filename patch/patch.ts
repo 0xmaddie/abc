@@ -1,35 +1,33 @@
-import {
-  Block,
-  equals as equalsBlock,
-} from "../block/mod.ts";
-
-import {
-  Key,
-  equals as equalsKey,
-} from "./key.ts";
+import * as block from "../block/mod.ts";
+import * as key from "../key/mod.ts";
 
 /**
  * A mutation of an ABC module.
  */
 export type Patch<T> =
   | { tag: "nil"; }
-  | { tag: "insert"; key: Key; value: Block<T>; }
-  | { tag: "remove"; key: Key; }
-  | { tag: "sequence"; fst: Patch<T>; snd: Patch<T>; }
+  | { tag: "insert";
+      key: key.Key;
+      value: block.Block<T>; }
+  | { tag: "remove";
+      key: key.Key; }
+  | { tag: "sequence";
+      fst: Patch<T>;
+      snd: Patch<T>; }
 
 export function nil<T>(): Patch<T> {
   return { tag: "nil" };
 }
 
 export function insert<T>(
-  key: Key,
-  value: Block<T>,
+  key: key.Key,
+  value: block.Block<T>,
 ): Patch<T> {
   return { tag: "insert", key, value };
 }
 
 export function remove<T>(
-  key: Key,
+  key: key.Key,
 ): Patch<T> {
   return { tag: "remove", key };
 }
@@ -73,15 +71,15 @@ export function equals<T>(
       if (snd.tag !== "insert") {
         return false;
       }
-      if (!equalsKey(fst.key, snd.key)) {
+      if (!key.equals(fst.key, snd.key)) {
         return false;
       }
-      return equalsBlock(fst.value, snd.value);
+      return block.equals(fst.value, snd.value);
     case "remove":
       if (snd.tag !== "remove") {
         return false;
       }
-      return equalsKey(fst.key, snd.key);
+      return key.equals(fst.key, snd.key);
     case "sequence":
       if (snd.tag !== "sequence") {
         return false;

@@ -1,31 +1,29 @@
 import {
-  Patch,
-} from "./patch.ts";
-
-import {
   Module,
 } from "./module.ts";
+
+import * as patch from "../patch/mod.ts";
 
 /**
  * Mutate a module with a patch.
  */
-export function runPatch<T>(
-  patch: Patch<T>,
+export function apply<T>(
+  point: patch.Patch<T>,
   ctx: Module<T>,
 ): void {
-  switch (patch.tag) {
+  switch (point.tag) {
     case "nil":
       //
       break;
     case "insert":
-      ctx.set(patch.key, patch.value);
+      ctx.set(point.key, point.value);
       break;
     case "remove":
-      ctx.delete(patch.key);
+      ctx.delete(point.key);
       break;
     case "sequence":
-      runPatch(patch.fst, ctx);
-      runPatch(patch.snd, ctx);
+      apply(point.fst, ctx);
+      apply(point.snd, ctx);
       break;
   }
 }

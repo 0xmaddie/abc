@@ -5,15 +5,14 @@ import {
 
 import {
   Module,
-  readPatch,
-  showPatch,
-  runPatch,
-} from "./mod.ts";
+} from "./module.ts";
 
 import {
-  read as readBlock,
-  equals as equalsBlock,
-} from "../block/mod.ts";
+  apply,
+} from "./apply.ts";
+
+import * as block from "../block/mod.ts";
+import * as patch from "../patch/mod.ts";
 
 Deno.test({
   name: "Module sanity check",
@@ -24,23 +23,14 @@ Deno.test({
 +baz [3 4 5]
 `;
     const ctx = new Module();
-    const patch = readPatch(source);
-    assertEquals(showPatch(patch), source.trim());
-    runPatch(patch, ctx);
+    const point = patch.read(source);
+    assertEquals(patch.show(point), source.trim());
+    apply(point, ctx);
     assert(ctx.has("foo"));
-    assert(equalsBlock(
-      ctx.get("foo"),
-      readBlock("1"),
-    ));
+    assert(block.equals(ctx.get("foo"), block.read("1")));
     assert(ctx.has("bar"));
-    assert(equalsBlock(
-      ctx.get("bar"),
-      readBlock("[foo bar baz]"),
-    ));
+    assert(block.equals(ctx.get("bar"), block.read("[foo bar baz]")));
     assert(ctx.has("baz"));
-    assert(equalsBlock(
-      ctx.get("baz"),
-      readBlock("[3 4 5]"),
-    ));
+    assert(block.equals(ctx.get("baz"), block.read("[3 4 5]")));
   },
 });

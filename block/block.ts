@@ -68,12 +68,22 @@ export function variable<T>(
   return { tag: "variable", name };
 }
 
+/**
+ * An annotation acts like the identity function, and provides some
+ * signal to the runtime that changes the style of evaluation.
+ */
 export function annotation<T>(
   name: string,
 ): Block<T> {
   return { tag: "annotation", name };
 }
 
+/**
+ * Access to special functions provided by the runtime. Generally
+ * these will not have visible side effects, in order to preserve
+ * causal commutativity; they'll just manipulate low level
+ * representations, as opposed to blocks.
+ */
 export function plugin<T>(
   name: string,
 ): Block<T> {
@@ -148,6 +158,9 @@ export function sequence<T>(
   return state;
 }
 
+/**
+ * Predicates equality of two blocks.
+ */
 export function equals<T>(
   fst: Block<T>,
   snd: Block<T>,

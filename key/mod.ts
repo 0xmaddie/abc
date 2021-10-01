@@ -5,7 +5,7 @@ export type Key =
   | string
   | { tag: "variable"; name: string; }
 
-export function getKey(key: Key): string {
+export function name(key: Key): string {
   if (typeof(key) === "string") {
     return key;
   }
@@ -16,5 +16,5 @@ export function equals(
   fst: Key,
   snd: Key,
 ): boolean {
-  return getKey(fst) === getKey(snd);
+  return name(fst) === name(snd);
 }
