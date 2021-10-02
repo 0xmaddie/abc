@@ -21,12 +21,11 @@ export class Module<T> {
     return this._data.has(name);
   }
 
-  get(point: key.Key): block.Block<T> {
+  get(
+    point: key.Key,
+  ): block.Block<T> | undefined {
     const name = key.name(point);
-    if (!this._data.has(name)) {
-      throw `${name} is undefined`;
-    }
-    return this._data.get(name)!;
+    return this._data.get(name);
   }
 
   set(

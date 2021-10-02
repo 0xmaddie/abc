@@ -27,10 +27,10 @@ Deno.test({
     assertEquals(patch.show(point), source.trim());
     apply(point, ctx);
     assert(ctx.has("foo"));
-    assert(block.equals(ctx.get("foo"), block.read("1")));
+    assert(block.equals(ctx.get("foo")!, block.read("1")));
     assert(ctx.has("bar"));
-    assert(block.equals(ctx.get("bar"), block.read("[foo bar baz]")));
+    assert(block.equals(ctx.get("bar")!, block.read("[foo bar baz]")));
     assert(ctx.has("baz"));
-    assert(block.equals(ctx.get("baz"), block.read("[3 4 5]")));
+    assert(block.equals(ctx.get("baz")!, block.read("[3 4 5]")));
   },
 });
