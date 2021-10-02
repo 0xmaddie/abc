@@ -27,7 +27,7 @@ export function expand<T>(
       return block;
     case "annotation":
       return block;
-    case "plugin":
+    case "extension":
       return block;
     case "natural":{
       let state = quote(variable<T>("zero"));

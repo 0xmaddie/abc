@@ -100,8 +100,8 @@ export type Event<T> =
       point: { tag: "annotation"; name: string };
       state: State<T>; }
   | { tag: "request";
-      method: "run-plugin";
-      point: { tag: "plugin"; name: string };
+      method: "run-extension";
+      point: { tag: "extension"; name: string };
       state: State<T>; }
   | { tag: "condition";
       method: "check-arity";
@@ -164,10 +164,10 @@ export function* norm<T>(
         };
         break;
       }
-      case "plugin": {
+      case "extension": {
         yield {
           tag: "request",
-          method: "run-plugin",
+          method: "run-extension",
           point,
           state,
         };

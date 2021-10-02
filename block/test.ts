@@ -22,7 +22,7 @@ Deno.test({
       ["[foo] E", ""],
       ["[foo] [bar] F", "[bar] [foo]"],
       ["@foo", ""],
-      ["!foo", "!foo"],
+      ["Foo", "Foo"],
       ["[@foo]", "[@foo]"],
       ["1337", "1337"],
       [":foo", ":foo"],
@@ -40,7 +40,7 @@ Deno.test({
               case "expand-variable":
                 event.state.thunk(event.point);
                 break;
-              case "run-plugin":
+              case "run-extension":
                 event.state.thunk(event.point);
                 break;
             }

@@ -3,7 +3,7 @@ import {
   constant,
   variable,
   annotation,
-  plugin,
+  extension,
   natural,
   keyword,
   quote,
@@ -22,11 +22,11 @@ export function read<T>(
   source = source.replaceAll("\t", " ");
   source = source.replaceAll("\n", " ");
   const tokens = source.split(" ");
-  const varP = /^[a-z_][a-z0-9_]*$/;
-  const annP = /^@[a-z_][a-z0-9_]*$/;
-  const plgP = /^![a-z_][a-z0-9_]*$/;
+  const varP = /^[a-z_-][a-z0-9_-]*$/;
+  const annP = /^@[a-z_-][a-z0-9_-]*$/;
+  const extP = /^[A-Z][a-z0-9_-]*$/;
   const natP = /^(0|[1-9][0-9]*)$/;
-  const keyP = /^:[a-z_][a-z0-9_]*$/;
+  const keyP = /^:[a-z_-][a-z0-9_-]*$/;
   let stack: Block<T>[][] = [];
   let build: Block<T>[] = [];
   for (const point of tokens) {
@@ -65,9 +65,8 @@ export function read<T>(
       const name = point.slice(1);
       const program = keyword<T>(name);
       build.push(program);
-    } else if (plgP.test(point)) {
-      const name = point.slice(1, point.length);
-      const program = plugin<T>(name);
+    } else if (extP.test(point)) {
+      const program = extension<T>(point);
       build.push(program);
     } else if (point.length === 0) {
       //

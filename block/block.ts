@@ -7,7 +7,7 @@ export type Block<T> =
       name: "A" | "B" | "C" | "D" | "E" | "F"; }
   | { tag: "variable"; name: string; }
   | { tag: "annotation"; name: string; }
-  | { tag: "plugin"; name: string; }
+  | { tag: "extension"; name: string; }
   | { tag: "natural"; value: bigint; }
   | { tag: "keyword"; value: string; }
   | { tag: "embed"; value: T; }
@@ -84,10 +84,10 @@ export function annotation<T>(
  * causal commutativity; they'll just manipulate low level
  * representations, as opposed to blocks.
  */
-export function plugin<T>(
+export function extension<T>(
   name: string,
 ): Block<T> {
-  return { tag: "plugin", name };
+  return { tag: "extension", name };
 }
 
 /**
@@ -184,8 +184,8 @@ export function equals<T>(
         return false;
       }
       return fst.name === snd.name;
-    case "plugin":
-      if (snd.tag !== "plugin") {
+    case "extension":
+      if (snd.tag !== "extension") {
         return false;
       }
       return fst.name === snd.name;

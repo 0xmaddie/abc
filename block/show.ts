@@ -17,8 +17,8 @@ export function show<T>(
       return block.name;
     case "annotation":
       return `@${block.name}`;
-    case "plugin":
-      return `!${block.name}`;
+    case "extension":
+      return `${block.name}`;
     case "natural":
       return `${block.value}`;
     case "embed":

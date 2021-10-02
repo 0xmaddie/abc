@@ -2,15 +2,15 @@ import { readAll } from "https://deno.land/std@0.97.0/io/util.ts";
 
 import {
   norm,
-  readBlock,
-  showBlock,
-} from "./mod.ts";
+  read,
+  show,
+} from "./block/mod.ts";
 
 const decoder = new TextDecoder();
 const stdin = decoder.decode(
   await readAll(Deno.stdin),
 );
-const source = readBlock(stdin);
+const source = read(stdin);
 for (const event of norm(source)) {
   switch (event.tag) {
     case "request":
@@ -18,7 +18,7 @@ for (const event of norm(source)) {
         case "expand-variable":
           event.state.thunk(event.point);
           break;
-        case "run-plugin":
+        case "run-extension":
           event.state.thunk(event.point);
           break;
         case "use-annotation":
@@ -29,7 +29,7 @@ for (const event of norm(source)) {
     case "condition":
       throw `condition: ${event.method}`;
     case "done":
-      console.log(showBlock(event.value));
+      console.log(show(event.state.value));
       break;
   }
 }
