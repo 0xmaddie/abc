@@ -15,13 +15,13 @@ for (const event of norm(source)) {
   switch (event.tag) {
     case "request":
       switch (event.method) {
-        case "expand-variable":
-          event.state.thunk(event.point);
+        case "variable":
+          event.state.thunk();
           break;
-        case "run-extension":
-          event.state.thunk(event.point);
+        case "extension":
+          event.state.thunk();
           break;
-        case "use-annotation":
+        case "annotation":
           //
           break;
       }
