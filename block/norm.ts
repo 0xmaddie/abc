@@ -120,7 +120,21 @@ export class State<T> {
   request(
     method: "annotation" | "extension" | "variable",
   ): Event<T> {
-    return { tag: "request", method, state: this };
+    const point = this.point;
+    if (
+      point === undefined ||
+      (point.tag !== "annotation" &&
+       point.tag !== "extension" &&
+       point.tag !== "variable")
+    ) {
+      throw `State.request: inconsistent state`;
+    }
+    return {
+      tag: "request",
+      method,
+      state: this,
+      name: point.name,
+    };
   }
 
   condition(
@@ -143,13 +157,16 @@ export class State<T> {
 export type Event<T> =
   | { tag: "request";
       method: "variable";
-      state: State<T>; }
+      state: State<T>;
+      name: string; }
   | { tag: "request";
       method: "annotation";
-      state: State<T>; }
+      state: State<T>;
+      name: string }
   | { tag: "request";
       method: "extension";
-      state: State<T>; }
+      state: State<T>;
+      name: string }
   | { tag: "condition";
       method: "arity";
       state: State<T>; }
