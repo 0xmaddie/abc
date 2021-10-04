@@ -7,6 +7,7 @@ import {
  */
 export function show<T>(
   block: Block<T>,
+  showEmbed?: (value: T) => string,
 ): string {
   switch (block.tag) {
     case "id":
@@ -22,15 +23,19 @@ export function show<T>(
     case "natural":
       return `${block.value}`;
     case "embed":
-      return `#<${block.value}>`;
+      if (showEmbed) {
+        return `#<${showEmbed(block.value)}>`;
+      } else {
+        return `#<${block.value}>`;
+      }
     case "keyword":
       return `:${block.value}`;
     case "quote":
-      const body = show(block.body);
+      const body = show(block.body, showEmbed);
       return `[${body}]`;
     case "sequence":
-      const fst = show(block.fst);
-      const snd = show(block.snd);
+      const fst = show(block.fst, showEmbed);
+      const snd = show(block.snd, showEmbed);
       return `${fst} ${snd}`;
     default:
       return _unreachable();

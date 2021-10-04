@@ -102,6 +102,10 @@ export class State<T> {
     return this.data[this.data.length-1-index];
   }
 
+  pushl(block: Block<T>): void {
+    this.data.unshift(block);
+  }
+
   thunk(): void {
     this.kill = this.kill.concat(this.data);
     if (this.point) {
