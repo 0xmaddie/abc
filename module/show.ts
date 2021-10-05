@@ -2,11 +2,7 @@ import {
   Module,
 } from "./module.ts";
 
-import {
-  quote,
-} from "./quote.ts";
-
-import * as patch from "../patch/mod.ts";
+import * as blk from "../block/mod.ts";
 
 /**
  * Return a string representation of a module.
@@ -14,5 +10,9 @@ import * as patch from "../patch/mod.ts";
 export function show<T>(
   ctx: Module<T>,
 ): string {
-  return patch.show(quote(ctx));
+  let buf: string[] = [];
+  for (const [key, value] of ctx.entries()) {
+    buf.push(`${key} = ${blk.show(value)}`);
+  }
+  return buf.join("\n");
 }

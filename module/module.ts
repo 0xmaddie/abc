@@ -1,5 +1,5 @@
 import * as block from "../block/mod.ts";
-import * as key from "../key/mod.ts";
+import * as key from "./key.ts";
 
 /**
  * A key-value store of ABC blocks.
